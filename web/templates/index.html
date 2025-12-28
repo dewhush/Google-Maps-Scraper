@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Google Maps Scraper | Extract Business Data</title>
+    <meta name="description" content="A powerful web-based Google Maps scraper to extract business information including names, phone numbers, and addresses.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <!-- Animated Background -->
+    <div class="bg-gradient"></div>
+    <div class="bg-grid"></div>
+    
+    <!-- Floating Orbs -->
+    <div class="floating-orbs">
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+        <div class="orb orb-3"></div>
+    </div>
+
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="logo">
+                <div class="logo-icon">
+                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" stroke="currentColor" stroke-width="2" fill="none"/>
+                        <circle cx="12" cy="9" r="2.5" stroke="currentColor" stroke-width="2"/>
+                    </svg>
+                </div>
+                <div class="logo-text">
+                    <h1>Maps Scraper</h1>
+                    <span>Extract Business Data</span>
+                </div>
+            </div>
+            <div class="header-stats">
+                <div class="stat-card">
+                    <span class="stat-number" id="totalContacts">0</span>
+                    <span class="stat-label">Total Contacts</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Scraper Panel -->
+            <section class="panel scraper-panel glass">
+                <div class="panel-header">
+                    <h2>
+                        <span class="icon">🔍</span>
+                        Start Scraping
+                    </h2>
+                </div>
+                <div class="panel-content">
+                    <div class="form-group">
+                        <label for="searchQuery">Search Query</label>
+                        <input 
+                            type="text" 
+                            id="searchQuery" 
+                            placeholder="e.g., coffee shop Jakarta, restaurant Bandung"
+                            value="coffee shop Jakarta"
+                        >
+                    </div>
+                    <div class="form-group">
+                        <label for="maxResults">Maximum Results</label>
+                        <div class="range-container">
+                            <input 
+                                type="range" 
+                                id="maxResults" 
+                                min="5" 
+                                max="100" 
+                                value="20"
+                            >
+                            <span class="range-value" id="maxResultsValue">20</span>
+                        </div>
+                    </div>
+                    <button class="btn btn-primary btn-scrape" id="startScrape">
+                        <span class="btn-icon">🚀</span>
+                        <span class="btn-text">Start Scraping</span>
+                    </button>
+                    
+                    <!-- Progress Section -->
+                    <div class="progress-section" id="progressSection" style="display: none;">
+                        <div class="progress-header">
+                            <span class="progress-status" id="progressStatus">Initializing...</span>
+                            <span class="progress-percent" id="progressPercent">0%</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+                        </div>
+                        <div class="progress-stats">
+                            <span>Found: <strong id="foundCount">0</strong> contacts</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Quick Add Panel -->
+            <section class="panel quick-add-panel glass">
+                <div class="panel-header">
+                    <h2>
+                        <span class="icon">➕</span>
+                        Quick Add
+                    </h2>
+                </div>
+                <div class="panel-content">
+                    <div class="form-row">
+                        <input type="text" id="addName" placeholder="Business Name">
+                        <input type="text" id="addPhone" placeholder="Phone Number">
+                        <button class="btn btn-secondary" id="addContact">Add</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Contacts Table -->
+            <section class="panel contacts-panel glass">
+                <div class="panel-header">
+                    <h2>
+                        <span class="icon">📋</span>
+                        Contacts Database
+                    </h2>
+                    <div class="panel-actions">
+                        <input type="text" id="searchContacts" placeholder="Search contacts..." class="search-input">
+                        <button class="btn btn-outline" id="exportBtn">
+                            <span>📥</span> Export
+                        </button>
+                        <button class="btn btn-outline" id="refreshBtn">
+                            <span>🔄</span> Refresh
+                        </button>
+                    </div>
+                </div>
+                <div class="panel-content">
+                    <div class="table-container">
+                        <table class="contacts-table">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Name</th>
+                                    <th>Phone</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="contactsTableBody">
+                                <!-- Contacts will be loaded here -->
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="empty-state" id="emptyState" style="display: none;">
+                        <div class="empty-icon">📭</div>
+                        <h3>No contacts yet</h3>
+                        <p>Start scraping to collect business contacts</p>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <p>Made with ☕ by <a href="https://github.com/dewhush" target="_blank">dewhush</a></p>
+        </footer>
+    </div>
+
+    <!-- Toast Notification -->
+    <div class="toast" id="toast">
+        <span class="toast-message"></span>
+    </div>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
