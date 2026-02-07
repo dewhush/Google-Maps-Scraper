@@ -124,10 +124,47 @@ class GoogleMapsCrawler:
             except:
                 pass
             
-            # Find search box
-            search_box = self.wait.until(
-                EC.presence_of_element_located((By.ID, "searchboxinput"))
-            )
+            # Find search box - try multiple selectors
+            search_box = None
+            selectors = [
+                (By.ID, "searchboxinput"),
+                (By.NAME, "q"),
+                (By.CSS_SELECTOR, "input.tactile-searchbox-input"),
+                (By.CSS_SELECTOR, "input[aria-label='Search Google Maps']"),
+                (By.CSS_SELECTOR, "input[placeholder*='Search']"),
+                (By.CSS_SELECTOR, "#searchbox input"),
+                (By.XPATH, "//input[@id='searchboxinput']"),
+                (By.XPATH, "//input[contains(@aria-label, 'Search')]"),
+                (By.XPATH, "//input[contains(@placeholder, 'Search')]"),
+            ]
+            
+            for selector_type, selector_value in selectors:
+                try:
+                    search_box = self.wait.until(
+                        EC.presence_of_element_located((selector_type, selector_value))
+                    )
+                    if search_box:
+                        print(f"[+] Found search box using: {selector_type} = {selector_value}")
+                        break
+                except:
+                    continue
+            
+            if not search_box:
+                # Last resort: try to find any visible input
+                print("[!] Trying fallback: finding any visible input...")
+                time.sleep(3)  # Extra wait for dynamic content
+                inputs = self.driver.find_elements(By.TAG_NAME, "input")
+                for inp in inputs:
+                    try:
+                        if inp.is_displayed() and inp.get_attribute("type") != "hidden":
+                            search_box = inp
+                            print(f"[+] Found fallback input element")
+                            break
+                    except:
+                        continue
+            
+            if not search_box:
+                raise Exception("Could not find search box with any selector")
             
             # Clear and enter search query
             search_box.clear()
